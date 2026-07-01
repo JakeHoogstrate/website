@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
 	const cfEnv = env as unknown as Record<string, string | undefined>;
 	const sessionSecret = cfEnv.SESSION_SECRET;
 	const adminPassword = cfEnv.ADMIN_PASSWORD;
@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request }) => {
 		});
 	}
 
-	const form = await request.formData();
+	const form = await context.request.formData();
 	const password = String(form.get('password') ?? '');
 
 	return new Response(JSON.stringify({ ok: true, gotPassword: password.length > 0 }), {
