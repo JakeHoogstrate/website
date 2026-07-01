@@ -10,5 +10,10 @@
 	},
 	"observability": {
 		"enabled": true
+	},
+	"vars": {
+		"GITHUB_OWNER": "JakeHoogstrate",
+		"GITHUB_REPO": "website",
+		"GITHUB_BRANCH": "main"
 	}
 }
