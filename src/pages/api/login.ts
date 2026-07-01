@@ -1,12 +1,17 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { verifyPassword, createSessionCookie } from '../../lib/auth';
-import { getSecret } from '../../lib/secrets';
 
 export const POST: APIRoute = async ({ request }) => {
-	// Read secrets before any await (e.g. request.formData()) — Cloudflare's
-	// per-request env binding can become unreachable after certain awaits.
-	const sessionSecret = getSecret('SESSION_SECRET');
-	const adminPassword = getSecret('ADMIN_PASSWORD');
+	const cfEnv = env as unknown as Record<string, string | undefined>;
+	const sessionSecret = cfEnv.SESSION_SECRET;
+	const adminPassword = cfEnv.ADMIN_PASSWORD;
+	if (!sessionSecret || !adminPassword) {
+		return new Response(JSON.stringify({ error: 'Server misconfigured: missing secrets.' }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
 
 	const form = await request.formData();
 	const password = String(form.get('password') ?? '');
