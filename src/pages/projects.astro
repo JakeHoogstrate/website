@@ -1,25 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const projects = [
-	{
-		name: 'Example Project',
-		description: 'A short description of what this project does and why you built it.',
-		link: 'https://github.com/',
-	},
-];
+export const prerender = true;
+
+const projects: { name: string; description: string; link: string }[] = [];
 ---
 
 <Layout title="Projects">
-	<h1 class="text-3xl font-bold tracking-tight mb-8">Projects</h1>
-	<ul class="space-y-8">
-		{projects.map((project) => (
-			<li>
-				<a href={project.link} class="text-lg font-semibold text-slate-900 hover:underline underline-offset-2">
-					{project.name}
-				</a>
-				<p class="text-slate-600 mt-1">{project.description}</p>
-			</li>
-		))}
-	</ul>
+	<h1 class="text-3xl font-bold tracking-tight text-slate-900 mb-2">Projects</h1>
+	<p class="text-slate-600 mb-10">A selection of things I've built.</p>
+	{
+		projects.length === 0 ? (
+			<div class="rounded-xl border border-dashed border-slate-300 p-10 text-center">
+				<p class="text-slate-500 font-medium">Coming soon</p>
+				<p class="text-slate-400 text-sm mt-1">I'm currently working on some projects to share here.</p>
+			</div>
+		) : (
+			<ul class="grid sm:grid-cols-2 gap-6">
+				{projects.map((project) => (
+					<li>
+						<a
+							href={project.link}
+							class="group block h-full rounded-xl border border-slate-200 p-6 transition-all hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-100"
+						>
+							<h2 class="text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{project.name}</h2>
+							<p class="text-slate-600 mt-2 text-sm leading-relaxed">{project.description}</p>
+						</a>
+					</li>
+				))}
+			</ul>
+		)
+	}
 </Layout>

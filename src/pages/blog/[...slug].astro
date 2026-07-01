@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
 	const posts = await getCollection('blog', ({ data }) => !data.draft);
 	return posts.map((post) => ({
@@ -15,11 +17,22 @@ const { Content } = await render(post);
 ---
 
 <Layout title={post.data.title} description={post.data.description}>
-	<article class="prose prose-slate max-w-none">
-		<h1 class="text-3xl font-bold tracking-tight mb-2">{post.data.title}</h1>
-		<p class="text-sm text-slate-400 mb-8">
+	<a href="/blog" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 transition-colors mb-8">
+		← Back to blog
+	</a>
+	<article class="prose prose-slate max-w-none prose-a:text-indigo-600 prose-headings:tracking-tight">
+		<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 not-prose">{post.data.title}</h1>
+		<p class="text-lg text-slate-600 leading-relaxed mb-4 not-prose">{post.data.description}</p>
+		<p class="text-sm text-slate-400 mb-8 not-prose">
 			{post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
 		</p>
+		{post.data.cover && (
+			<img
+				src={post.data.cover}
+				alt={post.data.title}
+				class="w-full rounded-xl border border-slate-200 mb-10 not-prose"
+			/>
+		)}
 		<Content />
 	</article>
 </Layout>

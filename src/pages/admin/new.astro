@@ -1,0 +1,181 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
+
+export const prerender = false;
+
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<Layout title="New Post">
+	<div class="flex items-center justify-between mb-8">
+		<h1 class="text-2xl font-bold tracking-tight text-slate-900">New Post</h1>
+		<a href="/admin" class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">← Back to dashboard</a>
+	</div>
+
+	<p id="error-banner" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6"></p>
+
+	<form id="new-post-form" class="space-y-6">
+		<div>
+			<label for="title-field" class="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
+			<input
+				id="title-field"
+				name="title"
+				type="text"
+				required
+				class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+			/>
+		</div>
+
+		<div>
+			<label for="description-field" class="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+			<textarea
+				id="description-field"
+				name="description"
+				required
+				rows="2"
+				class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+			></textarea>
+		</div>
+
+		<div class="flex gap-6">
+			<div>
+				<label for="date-field" class="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
+				<input
+					id="date-field"
+					name="date"
+					type="date"
+					value={today}
+					required
+					class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+				/>
+			</div>
+			<label class="flex items-center gap-2 mt-7 text-sm text-slate-700">
+				<input type="checkbox" name="draft" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+				Save as draft
+			</label>
+		</div>
+
+		<div>
+			<label class="block text-sm font-medium text-slate-700 mb-1.5">Cover image</label>
+			<input type="hidden" name="cover" id="cover-path" />
+			<img id="cover-preview" class="hidden w-full max-w-sm rounded-lg border border-slate-200 mb-3" alt="Cover preview" />
+			<label
+				class="inline-flex items-center gap-1.5 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-indigo-600 hover:text-indigo-600 transition-colors cursor-pointer"
+			>
+				<Icon name="upload" class="w-4 h-4" />
+				Upload cover image
+				<input id="cover-input" type="file" accept="image/*" class="hidden" />
+			</label>
+		</div>
+
+		<div>
+			<div class="flex items-center justify-between mb-1.5">
+				<label for="body-field" class="block text-sm font-medium text-slate-700">Body (Markdown)</label>
+				<button
+					type="button"
+					id="insert-image-button"
+					class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600 transition-colors"
+				>
+					<Icon name="upload" class="w-4 h-4" />
+					Insert image
+				</button>
+				<input id="insert-image-input" type="file" accept="image/*" class="hidden" />
+			</div>
+			<textarea
+				id="body-field"
+				name="body"
+				required
+				rows="16"
+				class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+			></textarea>
+		</div>
+
+		<button
+			id="submit-button"
+			type="submit"
+			class="inline-flex items-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-600 transition-colors"
+		>
+			Publish post
+		</button>
+	</form>
+</Layout>
+
+<script>
+	const draftId = crypto.randomUUID();
+
+	const form = document.getElementById('new-post-form') as HTMLFormElement;
+	const coverInput = document.getElementById('cover-input') as HTMLInputElement;
+	const coverPathField = document.getElementById('cover-path') as HTMLInputElement;
+	const coverPreview = document.getElementById('cover-preview') as HTMLImageElement;
+	const insertImageInput = document.getElementById('insert-image-input') as HTMLInputElement;
+	const insertImageButton = document.getElementById('insert-image-button') as HTMLButtonElement;
+	const bodyField = document.getElementById('body-field') as HTMLTextAreaElement;
+	const errorBanner = document.getElementById('error-banner') as HTMLParagraphElement;
+	const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+
+	function errorMessage(err: unknown): string {
+		return err instanceof Error ? err.message : 'Something went wrong.';
+	}
+
+	async function uploadImage(file: File): Promise<string> {
+		const data = new FormData();
+		data.set('draftId', draftId);
+		data.set('file', file);
+		const res = await fetch('/api/uploads', { method: 'POST', body: data });
+		const result = (await res.json()) as { path: string; error?: string };
+		if (!res.ok) throw new Error(result.error || 'Upload failed.');
+		return result.path;
+	}
+
+	coverInput.addEventListener('change', async () => {
+		const file = coverInput.files?.[0];
+		if (!file) return;
+		try {
+			const path = await uploadImage(file);
+			coverPathField.value = path;
+			coverPreview.src = path;
+			coverPreview.classList.remove('hidden');
+		} catch (err) {
+			alert(errorMessage(err));
+		}
+	});
+
+	insertImageButton.addEventListener('click', () => insertImageInput.click());
+
+	insertImageInput.addEventListener('change', async () => {
+		const file = insertImageInput.files?.[0];
+		if (!file) return;
+		try {
+			const path = await uploadImage(file);
+			const start = bodyField.selectionStart ?? bodyField.value.length;
+			const end = bodyField.selectionEnd ?? bodyField.value.length;
+			const snippet = `![](${path})`;
+			bodyField.value = bodyField.value.slice(0, start) + snippet + bodyField.value.slice(end);
+			bodyField.focus();
+			bodyField.selectionStart = bodyField.selectionEnd = start + snippet.length;
+		} catch (err) {
+			alert(errorMessage(err));
+		} finally {
+			insertImageInput.value = '';
+		}
+	});
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		errorBanner.classList.add('hidden');
+		submitButton.disabled = true;
+		submitButton.textContent = 'Publishing…';
+		try {
+			const res = await fetch('/api/posts', { method: 'POST', body: new FormData(form) });
+			const result = (await res.json()) as { slug: string; error?: string };
+			if (!res.ok) throw new Error(result.error || 'Failed to create post.');
+			window.location.href = '/admin?published=' + encodeURIComponent(result.slug);
+		} catch (err) {
+			errorBanner.textContent = errorMessage(err);
+			errorBanner.classList.remove('hidden');
+			submitButton.disabled = false;
+			submitButton.textContent = 'Publish post';
+		}
+	});
+</script>

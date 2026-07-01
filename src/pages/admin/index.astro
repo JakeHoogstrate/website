@@ -1,0 +1,133 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
+import { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH } from 'astro:env/server';
+import { listDir, getFile, GithubApiError, type GithubConfig } from '../../lib/github';
+import { parseFrontmatter } from '../../lib/frontmatter';
+
+export const prerender = false;
+
+const config: GithubConfig = { token: GITHUB_TOKEN, owner: GITHUB_OWNER, repo: GITHUB_REPO, branch: GITHUB_BRANCH };
+
+let posts: Array<{ slug: string; title: string; description: string; date: string; draft: boolean; cover?: string }> =
+	[];
+let loadError: string | null = null;
+
+try {
+	const entries = await listDir(config, 'src/content/blog');
+	posts = (
+		await Promise.all(
+			entries
+				.filter((entry) => entry.type === 'file' && entry.name.endsWith('.md'))
+				.map(async (entry) => {
+					const file = await getFile(config, entry.path);
+					if (!file) return null;
+					const fm = parseFrontmatter(file.content);
+					if (!fm) return null;
+					return { slug: entry.name.replace(/\.md$/, ''), ...fm };
+				})
+		)
+	).filter((post): post is NonNullable<typeof post> => post !== null);
+
+	posts.sort((a, b) => new Date(b.date).valueOf() - new Date(a.date).valueOf());
+} catch (error) {
+	loadError =
+		error instanceof GithubApiError
+			? `GitHub API error (${error.status}): ${error.message}`
+			: 'Unexpected error loading posts from GitHub.';
+}
+
+const publishedSlug = Astro.url.searchParams.get('published');
+---
+
+<Layout title="Admin Dashboard">
+	<div class="flex items-center justify-between mb-8">
+		<h1 class="text-2xl font-bold tracking-tight text-slate-900">Posts</h1>
+		<div class="flex items-center gap-4">
+			<a
+				href="/admin/new"
+				class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-600 transition-colors"
+			>
+				<Icon name="plus" class="w-4 h-4" />
+				New Post
+			</a>
+			<form method="POST" action="/api/logout">
+				<button type="submit" class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">Log out</button>
+			</form>
+		</div>
+	</div>
+
+	{
+		publishedSlug && (
+			<p class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 mb-6">
+				Published "{publishedSlug}". The live rebuild takes about a minute — check{' '}
+				<a href={`/blog/${publishedSlug}`} class="underline underline-offset-2">
+					the post
+				</a>{' '}
+				shortly.
+			</p>
+		)
+	}
+
+	{
+		loadError && (
+			<p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6">{loadError}</p>
+		)
+	}
+
+	{
+		!loadError &&
+			(posts.length === 0 ? (
+				<p class="text-slate-500">No posts yet.</p>
+			) : (
+				<ul class="space-y-3">
+					{posts.map((post) => (
+						<li class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
+							<div class="min-w-0">
+								<div class="flex items-center gap-2">
+									<p class="font-medium text-slate-900 truncate">{post.title}</p>
+									{post.draft && (
+										<span class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+											Draft
+										</span>
+									)}
+								</div>
+								<p class="text-sm text-slate-400">{post.date}</p>
+							</div>
+							<div class="flex items-center gap-3 shrink-0">
+								<a href={`/blog/${post.slug}`} class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">
+									View
+								</a>
+								<button
+									type="button"
+									data-delete-slug={post.slug}
+									class="text-slate-400 hover:text-red-600 transition-colors"
+									aria-label={`Delete ${post.title}`}
+								>
+									<Icon name="trash" class="w-4 h-4" />
+								</button>
+							</div>
+						</li>
+					))}
+				</ul>
+			))
+	}
+</Layout>
+
+<script>
+	document.querySelectorAll('[data-delete-slug]').forEach((button) => {
+		button.addEventListener('click', async () => {
+			const slug = button.getAttribute('data-delete-slug');
+			if (!slug || !confirm(`Delete "${slug}"? This cannot be undone.`)) return;
+			button.setAttribute('disabled', 'true');
+			const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' });
+			if (res.ok) {
+				location.reload();
+			} else {
+				const data = (await res.json().catch(() => ({}))) as { error?: string };
+				alert(data.error || 'Failed to delete post.');
+				button.removeAttribute('disabled');
+			}
+		});
+	});
+</script>

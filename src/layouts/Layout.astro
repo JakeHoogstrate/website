@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Icon from '../components/Icon.astro';
 
 interface Props {
 	title: string;
@@ -7,35 +8,71 @@ interface Props {
 }
 
 const { title, description = "Jake Hoogstrate's personal site." } = Astro.props;
+
+const navItems = [
+	{ href: '/', label: 'About' },
+	{ href: '/projects', label: 'Projects' },
+	{ href: '/blog', label: 'Blog' },
+];
+
+const currentPath = Astro.url.pathname;
 ---
 
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" href="/favicon-32.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} · Jake Hoogstrate</title>
 	</head>
 	<body class="min-h-screen bg-white text-slate-900 antialiased flex flex-col">
-		<header class="border-b border-slate-100">
-			<nav class="max-w-3xl mx-auto flex items-center justify-between px-6 py-5">
-				<a href="/" class="font-semibold tracking-tight text-slate-900">Jake Hoogstrate</a>
-				<ul class="flex gap-6 text-sm text-slate-600">
-					<li><a href="/" class="hover:text-slate-900">About</a></li>
-					<li><a href="/projects" class="hover:text-slate-900">Projects</a></li>
-					<li><a href="/blog" class="hover:text-slate-900">Blog</a></li>
-					<li><a href="/contact" class="hover:text-slate-900">Contact</a></li>
+		<header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+			<nav class="max-w-4xl mx-auto flex items-center justify-between px-6 py-4">
+				<a href="/" class="flex items-center gap-2 font-bold tracking-tight text-slate-900">
+					<img src="/images/logo.png" alt="Jake Hoogstrate logo" class="h-8 w-8 object-contain" />
+					Jake Hoogstrate
+				</a>
+				<ul class="flex gap-8 text-sm">
+					{navItems.map((item) => {
+						const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+						return (
+							<li>
+								<a
+									href={item.href}
+									class={`transition-colors ${isActive ? 'text-indigo-600 font-medium' : 'text-slate-600 hover:text-slate-900'}`}
+								>
+									{item.label}
+								</a>
+							</li>
+						);
+					})}
 				</ul>
 			</nav>
 		</header>
-		<main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
+		<main class="max-w-4xl mx-auto px-6 py-16 flex-1 w-full">
 			<slot />
 		</main>
-		<footer class="border-t border-slate-100">
-			<div class="max-w-3xl mx-auto px-6 py-6 text-sm text-slate-500">
-				© {new Date().getFullYear()} Jake Hoogstrate
+		<footer class="border-t border-slate-200">
+			<div class="max-w-4xl mx-auto px-6 py-8 flex items-center justify-between text-sm text-slate-500">
+				<p>© {new Date().getFullYear()} Jake Hoogstrate</p>
+				<div class="flex gap-4">
+					<a href="https://github.com/JakeHoogstrate" class="text-slate-400 hover:text-indigo-600 transition-colors" aria-label="GitHub">
+						<Icon name="github" class="w-5 h-5" />
+					</a>
+					<a
+						href="https://www.linkedin.com/in/jacob-hoogstrate-2478292a4/"
+						class="text-slate-400 hover:text-indigo-600 transition-colors"
+						aria-label="LinkedIn"
+					>
+						<Icon name="linkedin" class="w-5 h-5" />
+					</a>
+					<a href="mailto:jakehoogstrate5@gmail.com" class="text-slate-400 hover:text-indigo-600 transition-colors" aria-label="Email">
+						<Icon name="mail" class="w-5 h-5" />
+					</a>
+				</div>
 			</div>
 		</footer>
 	</body>
