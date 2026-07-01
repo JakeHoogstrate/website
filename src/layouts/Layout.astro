@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Jake Hoogstrate's personal site." } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} · Jake Hoogstrate</title>
+	</head>
+	<body class="min-h-screen bg-white text-slate-900 antialiased flex flex-col">
+		<header class="border-b border-slate-100">
+			<nav class="max-w-3xl mx-auto flex items-center justify-between px-6 py-5">
+				<a href="/" class="font-semibold tracking-tight text-slate-900">Jake Hoogstrate</a>
+				<ul class="flex gap-6 text-sm text-slate-600">
+					<li><a href="/" class="hover:text-slate-900">About</a></li>
+					<li><a href="/projects" class="hover:text-slate-900">Projects</a></li>
+					<li><a href="/blog" class="hover:text-slate-900">Blog</a></li>
+					<li><a href="/contact" class="hover:text-slate-900">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
+			<slot />
+		</main>
+		<footer class="border-t border-slate-100">
+			<div class="max-w-3xl mx-auto px-6 py-6 text-sm text-slate-500">
+				© {new Date().getFullYear()} Jake Hoogstrate
+			</div>
+		</footer>
+	</body>
+</html>

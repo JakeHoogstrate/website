@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const projects = [
+	{
+		name: 'Example Project',
+		description: 'A short description of what this project does and why you built it.',
+		link: 'https://github.com/',
+	},
+];
+---
+
+<Layout title="Projects">
+	<h1 class="text-3xl font-bold tracking-tight mb-8">Projects</h1>
+	<ul class="space-y-8">
+		{projects.map((project) => (
+			<li>
+				<a href={project.link} class="text-lg font-semibold text-slate-900 hover:underline underline-offset-2">
+					{project.name}
+				</a>
+				<p class="text-slate-600 mt-1">{project.description}</p>
+			</li>
+		))}
+	</ul>
+</Layout>
