@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
-import { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH } from 'astro:env/server';
+import { GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH } from 'astro:env/server';
 import { getFile, putFile, base64FromText, GithubApiError, type GithubConfig } from '../../lib/github';
 import { slugify } from '../../lib/slug';
 import { json } from '../../lib/response';
+import { getSecret } from '../../lib/secrets';
 
 function githubConfig(): GithubConfig {
-	return { token: GITHUB_TOKEN, owner: GITHUB_OWNER, repo: GITHUB_REPO, branch: GITHUB_BRANCH };
+	return { token: getSecret('GITHUB_TOKEN'), owner: GITHUB_OWNER, repo: GITHUB_REPO, branch: GITHUB_BRANCH };
 }
 
 function yamlString(value: string): string {

@@ -1,13 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
-import { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH } from 'astro:env/server';
+import { GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH } from 'astro:env/server';
 import { listDir, getFile, GithubApiError, type GithubConfig } from '../../lib/github';
 import { parseFrontmatter } from '../../lib/frontmatter';
+import { getSecret } from '../../lib/secrets';
 
 export const prerender = false;
 
-const config: GithubConfig = { token: GITHUB_TOKEN, owner: GITHUB_OWNER, repo: GITHUB_REPO, branch: GITHUB_BRANCH };
+const config: GithubConfig = {
+	token: getSecret('GITHUB_TOKEN'),
+	owner: GITHUB_OWNER,
+	repo: GITHUB_REPO,
+	branch: GITHUB_BRANCH,
+};
 
 let posts: Array<{ slug: string; title: string; description: string; date: string; draft: boolean; cover?: string }> =
 	[];

@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifySession } from './lib/auth';
+import { getSecret } from './lib/secrets';
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
@@ -12,12 +13,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		return next();
 	}
 
-	// Imported lazily (not at module top level) so this module can be evaluated
-	// at Worker cold start without eagerly reading secrets before Cloudflare's
-	// adapter has wired up the per-request environment.
-	const { SESSION_SECRET } = await import('astro:env/server');
-
-	const authed = await verifySession(context.request.headers.get('cookie'), SESSION_SECRET);
+	const authed = await verifySession(context.request.headers.get('cookie'), getSecret('SESSION_SECRET'));
 
 	if (!authed) {
 		if (isAdminPage) {

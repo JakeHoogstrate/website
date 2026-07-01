@@ -18,9 +18,6 @@ export default defineConfig({
 
   env: {
     schema: {
-      ADMIN_PASSWORD: envField.string({ context: 'server', access: 'secret' }),
-      SESSION_SECRET: envField.string({ context: 'server', access: 'secret' }),
-      GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
       GITHUB_OWNER: envField.string({ context: 'server', access: 'public' }),
       GITHUB_REPO: envField.string({ context: 'server', access: 'public' }),
       GITHUB_BRANCH: envField.string({ context: 'server', access: 'public', default: 'main' }),
