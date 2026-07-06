@@ -10,8 +10,8 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 ---
 
 <Layout title="Blog">
-	<h1 class="text-3xl font-bold tracking-tight text-slate-900 mb-2">Blog</h1>
-	<p class="text-slate-600 mb-10">Thoughts, notes, and write-ups.</p>
+	<h1 class="text-3xl font-bold tracking-tight text-slate-900 mb-2">Mets Blog</h1>
+	<p class="text-slate-600 mb-10">Using data driven analysis to talk Mets baseball.</p>
 	{posts.length === 0 && <p class="text-slate-600">No posts yet — check back soon.</p>}
 	<ul class="space-y-4">
 		{posts.map((post) => (
