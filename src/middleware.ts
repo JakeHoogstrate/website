@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
+import { SESSION_SECRET } from 'astro:env/server';
 import { verifySession } from './lib/auth';
-import { getSecret } from './lib/secrets';
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
@@ -13,7 +13,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		return next();
 	}
 
-	const authed = await verifySession(context.request.headers.get('cookie'), getSecret('SESSION_SECRET'));
+	const authed = await verifySession(context.request.headers.get('cookie'), SESSION_SECRET);
 
 	if (!authed) {
 		if (isAdminPage) {
