@@ -10,7 +10,9 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 ---
 
 <Layout title="Blog">
-	<h1 class="text-3xl font-bold tracking-tight text-slate-900 mb-2">Mets Blog</h1>
+	<h1 class="text-3xl font-bold tracking-tight mb-2 bg-gradient-to-r from-mets-blue to-mets-orange bg-clip-text text-transparent">
+		Mets Blog
+	</h1>
 	<p class="text-slate-600 mb-10">Using data driven analysis to talk Mets baseball.</p>
 	{posts.length === 0 && <p class="text-slate-600">No posts yet — check back soon.</p>}
 	<ul class="space-y-4">
@@ -18,12 +20,12 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 			<li>
 				<a
 					href={`/blog/${post.id}`}
-					class="group block rounded-xl border border-slate-200 p-6 transition-all hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-100"
+					class="group block rounded-xl border border-slate-200 p-6 transition-all hover:border-mets-orange/50 hover:shadow-lg hover:shadow-orange-100"
 				>
 					<p class="text-sm text-slate-400 mb-1">
 						{post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
 					</p>
-					<h2 class="text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{post.data.title}</h2>
+					<h2 class="text-lg font-semibold text-slate-900 group-hover:text-mets-blue transition-colors">{post.data.title}</h2>
 					<p class="text-slate-600 mt-2 text-sm leading-relaxed">{post.data.description}</p>
 				</a>
 			</li>

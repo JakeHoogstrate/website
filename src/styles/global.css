@@ -2,6 +2,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@theme {
+	--color-mets-blue: #002d72;
+	--color-mets-orange: #ff5910;
+}
+
 html {
 	font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 	scroll-behavior: smooth;
